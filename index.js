@@ -75,6 +75,19 @@ app.get('/user/:email', async (req, res) => {
   }
 })
 
+// get all users
+app.get('/users', async (req, res) => {
+  try {
+    const query = {};
+    const users = await usersCollection.find(query).toArray();
+    res.send(users);
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
 
 app.get('/', (req, res) => {
   res.send('Joldikino server is running');
