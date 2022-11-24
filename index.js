@@ -31,6 +31,7 @@ dbConnect();
 const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
 
+// save user in database
 app.put('/user/:email', async (req, res) => {
   try {
     const email = req.params.email;
@@ -56,6 +57,23 @@ app.put('/user/:email', async (req, res) => {
     })
   }
 });
+
+// get a single user
+app.get('/user/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+
+    res.send(user);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
 
 
 app.get('/', (req, res) => {
