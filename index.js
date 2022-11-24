@@ -31,7 +31,7 @@ dbConnect();
 const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
 
-app.put('/users/:email', async (req, res) => {
+app.put('/user/:email', async (req, res) => {
   try {
     const email = req.params.email;
     const query = { email: email };
@@ -39,24 +39,24 @@ app.put('/users/:email', async (req, res) => {
     const options = { upsert: true };
 
     const updateDoc = {
-      set: user
+      $set: user
     }
-
     const result = await usersCollection.updateOne(query, updateDoc, options);
+    console.log(result);
 
     // create auth token
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: '1d'
     })
     res.send({ result, token });
-    
   } catch (error) {
     res.send({
       success: false,
       error: error.message
     })
   }
-})
+});
+
 
 app.get('/', (req, res) => {
   res.send('Joldikino server is running');
