@@ -159,6 +159,24 @@ app.get('/products/category', async (req, res) => {
   }
 });
 
+// is seller verified
+app.get('/user/seller/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+
+    res.send({isVerified: user?.isVerified === true});
+
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
 // default get
 app.get('/', (req, res) => {
   res.send('Joldikino server is running');
