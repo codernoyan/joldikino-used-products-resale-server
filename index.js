@@ -26,7 +26,7 @@ const verifyJwt = (req, res, next) => {
 }
 
 // mongodb
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ufdxsbo.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -144,6 +144,23 @@ app.get('/products', async (req, res) => {
   }
 });
 
+// get a single product
+app.get('/products/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await productCollection.findOne(query);
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
 // get all products by category
 app.get('/products/category', async (req, res) => {
   try {
@@ -184,9 +201,32 @@ app.post('/products/advertised', async (req, res) => {
   try {
     const advertisedProduct = req.body;
     const result = await advertisedCollection.insertOne(advertisedProduct);
-    
+
     res.send(result);
     console.log(advertisedProduct);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// update advertise status to products
+app.put('/products/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const productInfo = req.body;
+    const options = { upsert: true };
+
+    const updateDoc = {
+      $set: productInfo
+    };
+    const updatedProduct = await productCollection.updateOne(query, updateDoc, options);
+
+    res.send(updatedProduct);
 
   } catch (error) {
     res.send({
