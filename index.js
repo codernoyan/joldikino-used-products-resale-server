@@ -237,13 +237,14 @@ app.put('/products/:id', verifyJwt, async (req, res) => {
 });
 
 // delete a product
-app.delete('product/:id', async (req, res) => {
+app.delete('/products/:id', verifyJwt, async (req, res) => {
   try {
     const id = req.params.id;
     const filter = { _id: ObjectId(id) };
     const result = await productCollection.deleteOne(filter);
 
     res.send(result);
+    console.log(id, filter);
 
   } catch (error) {
     res.send({
