@@ -91,10 +91,11 @@ app.get('/user/:email', async (req, res) => {
   }
 })
 
-// get all users
-app.get('/users', async (req, res) => {
+// get all users by role
+app.get('/users', verifyJwt, async (req, res) => {
   try {
-    const query = {};
+    const userRole = req.query.role;
+    const query = { role: userRole };
     const users = await usersCollection.find(query).toArray();
 
     res.send(users);
@@ -124,11 +125,11 @@ app.post('/products', verifyJwt, async (req, res) => {
 });
 
 // get all products for seller
-app.get('/products', verifyJwt, async (req, res) => {
+app.get('/products', async (req, res) => {
   try {
     const sellerEmail = req.query.email;
     const query = {
-      email: sellerEmail
+      sellerEmail: sellerEmail
     };
     const products = await productCollection.find(query).toArray();
     res.send(products);
