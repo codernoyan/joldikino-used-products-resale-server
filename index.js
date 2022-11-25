@@ -108,12 +108,11 @@ app.get('/users', async (req, res) => {
 });
 
 // product post
-app.post('/products', async (req, res) => {
+app.post('/products', verifyJwt, async (req, res) => {
   try {
     const productsData = req.body;
-    console.log(productsData);
     const result = await productCollection.insertOne(productsData);
-    
+
     res.send(result);
 
   } catch (error) {
@@ -122,8 +121,44 @@ app.post('/products', async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
+// get all products for seller
+app.get('/products', verifyJwt, async (req, res) => {
+  try {
+    const sellerEmail = req.query.email;
+    const query = {
+      email: sellerEmail
+    };
+    const products = await productCollection.find(query).toArray();
+    res.send(products);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// get all products by category
+app.get('/products/category', async (req, res) => {
+  try {
+    const category = req.query.category;
+    const query = { category: category };
+    const filteredProducts = await productCollection.find(query).toArray();
+
+    res.send(filteredProducts);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// default get
 app.get('/', (req, res) => {
   res.send('Joldikino server is running');
 });
