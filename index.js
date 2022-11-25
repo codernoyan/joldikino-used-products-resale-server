@@ -197,7 +197,7 @@ app.get('/user/seller/:email', async (req, res) => {
 });
 
 // post product to advertise collection
-app.post('/products/advertised', async (req, res) => {
+app.post('/products/advertised', verifyJwt, async (req, res) => {
   try {
     const advertisedProduct = req.body;
     const result = await advertisedCollection.insertOne(advertisedProduct);
@@ -214,7 +214,7 @@ app.post('/products/advertised', async (req, res) => {
 });
 
 // update advertise status to products
-app.put('/products/:id', async (req, res) => {
+app.put('/products/:id', verifyJwt, async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: ObjectId(id) };
@@ -234,7 +234,25 @@ app.put('/products/:id', async (req, res) => {
       error: error.message
     })
   }
-})
+});
+
+// delete a product
+app.delete('product/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const result = await productCollection.deleteOne(filter);
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
 
 // default get
 app.get('/', (req, res) => {
