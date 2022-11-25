@@ -91,7 +91,7 @@ app.get('/user/:email', async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
 // get all users by role
 app.get('/users', verifyJwt, async (req, res) => {
@@ -110,6 +110,23 @@ app.get('/users', verifyJwt, async (req, res) => {
   }
 });
 
+// delete a user
+// app.delete('/users/:id', async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const filter = { _id: ObjectId(id) };
+//     const result = await usersCollection.deleteOne(filter);
+
+//     res.send(result);
+
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// })
+
 // product post
 app.post('/products', verifyJwt, async (req, res) => {
   try {
@@ -126,8 +143,43 @@ app.post('/products', verifyJwt, async (req, res) => {
   }
 });
 
-// get all products for seller
+// get all products
 app.get('/products', async (req, res) => {
+  try {
+    const query = {};
+    const cursor = productCollection.find(query);
+    const result = await cursor.toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// additional api for getting products by category
+app.get('/products/camera', async (req, res) => {
+  try {
+    const category = req.query.category;
+    const query = { category: category };
+    const cursor = productCollection.find(query);
+    const result = await cursor.toArray();
+    
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
+// get all products for seller
+app.get('/products/seller', async (req, res) => {
   try {
     const sellerEmail = req.query.email;
     const query = {
@@ -160,23 +212,23 @@ app.get('/products/:id', async (req, res) => {
     })
   }
 })
-
+// getting errors
 // get all products by category
-app.get('/products/category', async (req, res) => {
-  try {
-    const category = req.query.category;
-    const query = { category: category };
-    const filteredProducts = await productCollection.find(query).toArray();
+// app.get('/products/category', async (req, res) => {
+//   try {
+//     const category = req.query.category;
+//     const query = { category: category };
+//     const filteredProducts = await productCollection.find(query).toArray();
 
-    res.send(filteredProducts);
+//     res.send(filteredProducts);
 
-  } catch (error) {
-    res.send({
-      success: false,
-      error: error.message
-    })
-  }
-});
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// });
 
 // is seller verified
 app.get('/user/seller/:email', async (req, res) => {
@@ -213,6 +265,21 @@ app.post('/products/advertised', verifyJwt, async (req, res) => {
   }
 });
 
+// getting errors
+// get advertised items
+// app.get('/products/advertised', async (req, res) => {
+//   try {
+//     const query = req.query.name;
+//     console.log(query);
+
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// });
+
 // update advertise status to products
 app.put('/products/:id', verifyJwt, async (req, res) => {
   try {
@@ -244,7 +311,6 @@ app.delete('/products/:id', verifyJwt, async (req, res) => {
     const result = await productCollection.deleteOne(filter);
 
     res.send(result);
-    console.log(id, filter);
 
   } catch (error) {
     res.send({
