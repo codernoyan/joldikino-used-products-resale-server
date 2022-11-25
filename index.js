@@ -46,6 +46,8 @@ dbConnect();
 
 const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
+const advertisedCollection = client.db('joldiKino').collection('advertised');
+const wishlistCollection = client.db('joldiKino').collection('wishlist');
 
 // save user in database
 app.put('/user/:email', async (req, res) => {
@@ -166,8 +168,25 @@ app.get('/user/seller/:email', async (req, res) => {
     const query = { email: email };
     const user = await usersCollection.findOne(query);
 
-    res.send({isVerified: user?.isVerified === true});
+    res.send({ isVerified: user?.isVerified === true });
 
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// post product to advertise collection
+app.post('/products/advertised', async (req, res) => {
+  try {
+    const advertisedProduct = req.body;
+    const result = await advertisedCollection.insertOne(advertisedProduct);
+    
+    res.send(result);
+    console.log(advertisedProduct);
 
   } catch (error) {
     res.send({
