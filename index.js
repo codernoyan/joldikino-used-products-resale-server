@@ -48,6 +48,7 @@ const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
 const advertisedCollection = client.db('joldiKino').collection('advertised');
 const reportedItemsCollection = client.db('joldiKino').collection('reported');
+const wishlistItemsCollection = client.db('joldiKino').collection('wishlist');
 const bookingsCollection = client.db('joldiKino').collection('bookings');
 
 // verify admin with jwt
@@ -340,6 +341,56 @@ app.delete('/products/:id', verifyJwt, async (req, res) => {
     const filter = { _id: ObjectId(id) };
     const result = await productCollection.deleteOne(filter);
 
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// post api for book product
+app.post('/bookings', async (req, res) => {
+  try {
+    const booking = req.body;
+    const result = await bookingsCollection.insertOne(booking);
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// get bookings
+app.get('/bookings', async (req, res) => {
+  try {
+    const query = {};
+    const cursor = bookingsCollection.find(query);
+    const result = await cursor.toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// get single booking
+app.get('/bookings/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await bookingsCollection.findOne(query);
+    
     res.send(result);
 
   } catch (error) {
