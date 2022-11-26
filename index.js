@@ -351,8 +351,24 @@ app.delete('/products/:id', verifyJwt, async (req, res) => {
   }
 });
 
-// post api for book product
-app.post('/bookings', async (req, res) => {
+app.get('/reported', verifyJwt, async (req, res) => {
+  try {
+    const query = { status: 'reported' };
+    const cursor = productCollection.find(query)
+    const result = await cursor.toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
+// post bookings
+app.post('/bookings', verifyJwt, async (req, res) => {
   try {
     const booking = req.body;
     const result = await bookingsCollection.insertOne(booking);
@@ -368,7 +384,7 @@ app.post('/bookings', async (req, res) => {
 });
 
 // get bookings
-app.get('/bookings', async (req, res) => {
+app.get('/bookings', verifyJwt, async (req, res) => {
   try {
     const query = {};
     const cursor = bookingsCollection.find(query);
@@ -390,7 +406,7 @@ app.get('/bookings/:id', async (req, res) => {
     const id = req.params.id;
     const query = { _id: ObjectId(id) };
     const result = await bookingsCollection.findOne(query);
-    
+
     res.send(result);
 
   } catch (error) {
@@ -401,6 +417,69 @@ app.get('/bookings/:id', async (req, res) => {
   }
 });
 
+// post reported items
+// app.post('/reportedItems', async (req, rse) => {
+//   try {
+//     const reportedItem = req.body;
+//     const result = await reportedItemsCollection.insertOne(reportedItem);
+
+//     res.send(result);
+
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// });
+
+// // get reported items
+// app.get('reportedItems', async (req, res) => {
+//   try {
+//     const query = {};
+//     const cursor = reportedItemsCollection.find(query);
+//     const result = await cursor.toArray();
+
+//     res.send(result);
+
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// });
+
+// // get single reported items
+// app.get('/reportedItems/:id', async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const filter = { _id: ObjectId(id) };
+//     const result = await reportedItemsCollection.findOne(filter);
+
+//     res.send(result);
+
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// });
+
+// // delete a reported item
+// app.delete('/reportedItems/:id', async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const filter = { _id: ObjectId(id) };
+//     const result = await reportedItemsCollection.deleteOne(filter);
+//   } catch (error) {
+//     res.send({
+//       success: false,
+//       error: error.message
+//     })
+//   }
+// })
 
 // default get
 app.get('/', (req, res) => {
