@@ -47,7 +47,19 @@ dbConnect();
 const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
 const advertisedCollection = client.db('joldiKino').collection('advertised');
-const wishlistCollection = client.db('joldiKino').collection('wishlist');
+const reportedItemsCollection = client.db('joldiKino').collection('reported');
+const bookingsCollection = client.db('joldiKino').collection('bookings');
+
+// verify admin with jwt
+const verifyAdmin = async (req, res, next) => {
+  const decodedEmail = req.decoded.email;
+  const query = { email: decodedEmail };
+  const user = await usersCollection.findOne(query);
+  if (user?.role !== 'admin') {
+    return res.status(403).send({ access: 'Forbidden access' });
+  }
+  next();
+}
 
 // save user in database
 app.put('/user/:email', async (req, res) => {
@@ -110,22 +122,22 @@ app.get('/users', verifyJwt, async (req, res) => {
   }
 });
 
-// delete a user
-// app.delete('/users/:id', async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const filter = { _id: ObjectId(id) };
-//     const result = await usersCollection.deleteOne(filter);
+// delete a user for admin
+app.delete('/users/:id', verifyJwt, verifyAdmin, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const result = await usersCollection.deleteOne(filter);
 
-//     res.send(result);
+    res.send(result);
 
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// })
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
 
 // product post
 app.post('/products', verifyJwt, async (req, res) => {
@@ -167,7 +179,7 @@ app.get('/products/camera', async (req, res) => {
     const query = { category: category };
     const cursor = productCollection.find(query);
     const result = await cursor.toArray();
-    
+
     res.send(result);
 
   } catch (error) {
@@ -211,7 +223,25 @@ app.get('/products/:id', async (req, res) => {
       error: error.message
     })
   }
+});
+
+// get advertised products
+app.get('/advertised', async (req, res) => {
+  try {
+    const query = {};
+    const cursor = advertisedCollection.find(query);
+    const result = await cursor.toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
 })
+
 // getting errors
 // get all products by category
 // app.get('/products/category', async (req, res) => {
