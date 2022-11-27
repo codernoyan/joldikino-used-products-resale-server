@@ -3,6 +3,9 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const jwt = require('jsonwebtoken');
+// stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 
 // middleware's
@@ -47,8 +50,7 @@ dbConnect();
 const productCollection = client.db('joldiKino').collection('products');
 const usersCollection = client.db('joldiKino').collection('users');
 const advertisedCollection = client.db('joldiKino').collection('advertised');
-const reportedItemsCollection = client.db('joldiKino').collection('reported');
-const wishlistItemsCollection = client.db('joldiKino').collection('wishlist');
+const paymentsCollection = client.db('joldiKino').collection('payments');
 const bookingsCollection = client.db('joldiKino').collection('bookings');
 
 // verify admin with jwt
@@ -243,23 +245,6 @@ app.get('/advertised', async (req, res) => {
   }
 })
 
-// getting errors
-// get all products by category
-// app.get('/products/category', async (req, res) => {
-//   try {
-//     const category = req.query.category;
-//     const query = { category: category };
-//     const filteredProducts = await productCollection.find(query).toArray();
-
-//     res.send(filteredProducts);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
 
 // is seller verified
 app.get('/user/seller/:email', async (req, res) => {
@@ -296,20 +281,6 @@ app.post('/products/advertised', verifyJwt, async (req, res) => {
   }
 });
 
-// getting errors
-// get advertised items
-// app.get('/products/advertised', async (req, res) => {
-//   try {
-//     const query = req.query.name;
-//     console.log(query);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
 
 // update advertise status to products
 app.put('/products/:id', verifyJwt, async (req, res) => {
@@ -401,7 +372,7 @@ app.get('/bookings', verifyJwt, async (req, res) => {
 });
 
 // get single booking
-app.get('/bookings/:id', async (req, res) => {
+app.get('/bookings/:id', verifyJwt, async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: ObjectId(id) };
@@ -417,62 +388,85 @@ app.get('/bookings/:id', async (req, res) => {
   }
 });
 
-// post reported items
-// app.post('/reportedItems', async (req, rse) => {
+// v2 of advertised items
+app.get('/advertised/v2', async (req, res) => {
+  try {
+    const query = { isAdvertised: true };
+    const cursor = productCollection.find(query);
+    const result = await cursor.toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// stripe payment api
+app.post('/create-payment-intent', async (req, res) => {
+  try {
+    const booking = req.body;
+    const price = booking.itemPrice;
+    const amount = price * 100;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      currency: 'usd',
+      amount: amount,
+      "payment_method_types": [
+        "card"
+      ],
+    });
+
+    // send client secret
+    res.send({
+      clientSecret: paymentIntent.client_secret
+    })
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// payments post api
+app.post('/payments', async (req, res) => {
+  try {
+    const payment = req.body;
+    const result = await paymentsCollection.insertOne(payment);
+    const id = payment.bookingId;
+    const query = { _id: ObjectId(id) };
+    const options = { upsert: true };
+    const updatedDoc = {
+      $set: {
+        paid: true,
+      }
+    };
+    const updateProduct = await bookingsCollection.updateOne(query, updatedDoc, options)
+    res.send({ result, updateProduct });
+
+  } catch (error) {
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+});
+
+// buyers filter api from booking collection
+// app.get('/buyers', async (req, res) => {
 //   try {
-//     const reportedItem = req.body;
-//     const result = await reportedItemsCollection.insertOne(reportedItem);
-
-//     res.send(result);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
-
-// // get reported items
-// app.get('reportedItems', async (req, res) => {
-//   try {
-//     const query = {};
-//     const cursor = reportedItemsCollection.find(query);
+//     const sellerEmail = req.query.email;
+//     const query = { sellerEmail: sellerEmail };
+//     const cursor = bookingsCollection.find(query).project({buyerName: 1, buyerEmail})
 //     const result = await cursor.toArray();
-
+    
 //     res.send(result);
 
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
-
-// // get single reported items
-// app.get('/reportedItems/:id', async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const filter = { _id: ObjectId(id) };
-//     const result = await reportedItemsCollection.findOne(filter);
-
-//     res.send(result);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
-
-// // delete a reported item
-// app.delete('/reportedItems/:id', async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const filter = { _id: ObjectId(id) };
-//     const result = await reportedItemsCollection.deleteOne(filter);
 //   } catch (error) {
 //     res.send({
 //       success: false,
