@@ -457,23 +457,6 @@ app.post('/payments', async (req, res) => {
   }
 });
 
-// buyers filter api from booking collection
-// app.get('/buyers', async (req, res) => {
-//   try {
-//     const sellerEmail = req.query.email;
-//     const query = { sellerEmail: sellerEmail };
-//     const cursor = bookingsCollection.find(query).project({buyerName: 1, buyerEmail})
-//     const result = await cursor.toArray();
-    
-//     res.send(result);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// })
 
 // default get
 app.get('/', (req, res) => {
