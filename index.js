@@ -357,7 +357,8 @@ app.post('/bookings', verifyJwt, async (req, res) => {
 // get bookings
 app.get('/bookings', verifyJwt, async (req, res) => {
   try {
-    const query = {};
+    const email = req.query.email;
+    const query = { buyerEmail: email };
     const cursor = bookingsCollection.find(query);
     const result = await cursor.toArray();
 
