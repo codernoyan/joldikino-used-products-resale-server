@@ -371,23 +371,6 @@ app.get('/bookings/:email', verifyJwt, async (req, res) => {
     })
   }
 });
-// get bookings with query
-// app.get('/bookings', verifyJwt, async (req, res) => {
-//   try {
-//     const email = req.query.email;
-//     const query = { buyerEmail: email };
-//     const cursor = bookingsCollection.find(query);
-//     const result = await cursor.toArray();
-
-//     res.send(result);
-
-//   } catch (error) {
-//     res.send({
-//       success: false,
-//       error: error.message
-//     })
-//   }
-// });
 
 // get single booking
 app.get('/bookings/:id', verifyJwt, async (req, res) => {
