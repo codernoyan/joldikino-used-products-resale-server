@@ -26,7 +26,7 @@ const verifyJwt = (req, res, next) => {
     req.decoded = decoded;
     next();
   })
-}
+};
 
 // mongodb
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -62,7 +62,7 @@ const verifyAdmin = async (req, res, next) => {
     return res.status(403).send({ access: 'Forbidden access' });
   }
   next();
-}
+};
 
 // save user in database
 app.put('/user/:email', async (req, res) => {
@@ -140,7 +140,7 @@ app.delete('/users/:id', verifyJwt, verifyAdmin, async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
 // product post
 app.post('/products', verifyJwt, async (req, res) => {
@@ -191,7 +191,7 @@ app.get('/products/camera', async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
 // get all products for seller
 app.get('/products/seller', async (req, res) => {
@@ -243,7 +243,7 @@ app.get('/advertised', async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
 
 // is seller verified
@@ -336,7 +336,7 @@ app.get('/reported', verifyJwt, async (req, res) => {
       error: error.message
     })
   }
-})
+});
 
 // post bookings
 app.post('/bookings', verifyJwt, async (req, res) => {
@@ -466,4 +466,4 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Joldikino server is running on port: ${port}`);
-})
+});
