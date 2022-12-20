@@ -373,7 +373,7 @@ app.get('/bookings/:email', verifyJwt, async (req, res) => {
 });
 
 // get single booking
-app.get('/bookings/:id', verifyJwt, async (req, res) => {
+app.get('/bookings/product/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: ObjectId(id) };
@@ -410,7 +410,7 @@ app.get('/advertised/v2', async (req, res) => {
 app.post('/create-payment-intent', async (req, res) => {
   try {
     const booking = req.body;
-    const price = booking.itemPrice;
+    const price = Number(booking.itemPrice);
     const amount = price * 100;
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -420,6 +420,8 @@ app.post('/create-payment-intent', async (req, res) => {
         "card"
       ],
     });
+
+    console.log(paymentIntent.client_secret);
 
     // send client secret
     res.send({
