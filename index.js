@@ -5,13 +5,16 @@ const app = express();
 const jwt = require('jsonwebtoken');
 // stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
+const cookieParser = require('cookie-parser');
 const port = process.env.PORT || 5000;
 
 // middleware's
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://joldikino-assignment-server.vercel.app"],
+  credentials: true
+}));
 app.use(express.json());
-
+app.use(cookieParser());
 // verify jwt middleware
 const verifyJwt = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -82,7 +85,15 @@ app.put('/user/:email', async (req, res) => {
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: '1d'
     })
-    res.send({ result, token });
+    
+    res.cookie("joldikino-token", token, {
+      // maxAge: new Date(Date.now() + 86400000),
+      // httpOnly: true,
+      // signed: true
+      expires: new Date(Date.now() + 86400000)
+    }).json({ result, token });
+    
+    // res.send({ result, token });
   } catch (error) {
     res.send({
       success: false,
@@ -322,7 +333,7 @@ app.delete('/products/:id', verifyJwt, async (req, res) => {
   }
 });
 
-app.get('/reported', verifyJwt, async (req, res) => {
+app.get('/reported', verifyJwt, verifyAdmin, async (req, res) => {
   try {
     const query = { status: 'reported' };
     const cursor = productCollection.find(query)
