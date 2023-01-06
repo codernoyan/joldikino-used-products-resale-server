@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 
 // middleware's
 app.use(cors({
-  origin: ["http://localhost:3000", "https://joldikino-assignment-server.vercel.app"],
+  origin: ["http://localhost:3000", "https://joldikino-assignment.web.app"],
   credentials: true
 }));
 app.use(express.json());
